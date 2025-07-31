@@ -27,6 +27,10 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [analysisId, setAnalysisId] = useState(null);
+  const API_BASE_URL =
+    import.meta.env.MODE === "development"
+      ? "http://localhost:5001/api"
+      : "https://inclusight-production.up.railway.app/api";
 
   const handleAnalyze = async (url) => {
     if (!url) {
@@ -37,7 +41,7 @@ const HomePage = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/analyze", {
+      const res = await fetch(`${API_BASE_URL}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -45,8 +49,8 @@ const HomePage = () => {
 
       const data = await res.json();
       if (data.success) {
-        setResults(data); // ✅ Set all results
-        setAnalysisId(data.analysisId); // ✅ Extract and store ID separately
+        setResults(data);
+        setAnalysisId(data.analysisId);
       } else {
         setError("No results returned.");
         setResults(null);
@@ -67,10 +71,9 @@ const HomePage = () => {
     }
 
     try {
-      const response = await fetch(
-        `/api/analyze/download/${id}`
-      );
+      const response = await fetch(`${API_BASE_URL}/analyze/download/${id}`);
       if (!response.ok) throw new Error("Failed to download report");
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
@@ -86,30 +89,63 @@ const HomePage = () => {
       alert("Failed to download report.");
     }
   };
-  // const handleDownload = async () => {
-  //   if (!analysisId) {
+
+  // const handleAnalyze = async (url) => {
+  //   if (!url) {
+  //     setResults(null);
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   setError("");
+  //   try {
+  //     const res = await fetch("/api/analyze", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ url }),
+  //     });
+
+  //     const data = await res.json();
+  //     if (data.success) {
+  //       setResults(data); // ✅ Set all results
+  //       setAnalysisId(data.analysisId); // ✅ Extract and store ID separately
+  //     } else {
+  //       setError("No results returned.");
+  //       setResults(null);
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError("Something went wrong. Please try again.");
+  //     setResults(null);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // const handleDownload = async (id) => {
+  //   if (!id) {
   //     alert("No analysis ID found. Please analyze a website first.");
   //     return;
   //   }
 
   //   try {
-  //     const response = await fetch(`/api/analyze/download/${analysisId}`);
-
+  //     const response = await fetch(
+  //       `/api/analyze/download/${id}`
+  //     );
   //     if (!response.ok) throw new Error("Failed to download report");
-
   //     const blob = await response.blob();
   //     const url = window.URL.createObjectURL(blob);
 
   //     const a = document.createElement("a");
   //     a.href = url;
-  //     a.download = `accessibility-report-${analysisId}.csv`;
+  //     a.download = `accessibility-report-${id}.csv`;
   //     document.body.appendChild(a);
   //     a.click();
-  //     document.body.removeChild(a);
+  //     a.remove();
   //     window.URL.revokeObjectURL(url);
   //   } catch (err) {
-  //     alert("Error downloading report");
   //     console.error(err);
+  //     alert("Failed to download report.");
   //   }
   // };
 
@@ -426,7 +462,8 @@ const HomePage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-20">
               <h2 className="text-4xl lg:text-5xl font-bold leading-tight mb-6">
-                Powerful <span className="grade1">Accessibility</span> <span className="grade1">Analysis</span>
+                Powerful <span className="grade1">Accessibility</span>{" "}
+                <span className="grade1">Analysis</span>
               </h2>
               <p className="text-xl max-w-3xl mx-auto">
                 Comprehensive tools to identify, understand, and resolve
